@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#060614" />
+    <title>MergeVerse - The Ultimate Evolution</title>
+    <meta name="description" content="MergeVerse: The Ultimate Evolution - Cosmic block dropping and merging puzzle game." />
+    <meta property="og:title" content="MergeVerse - The Ultimate Evolution" />
+    <meta property="og:description" content="Cosmic block dropping and merging puzzle game." />
+    <meta property="og:image" content="/icon.png" />
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+      html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        position: fixed;
+        inset: 0;
+        background-color: #060614;
+        color: #ffffff;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #root {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+      #preloader {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 50% 30%, #15092e 0%, #060614 70%, #020208 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 99999;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        user-select: none;
+        transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
+      }
+      #preloader.fade-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .preloader-glow-circle {
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle, rgba(217, 70, 239, 0.22) 0%, rgba(6, 182, 212, 0.15) 50%, transparent 70%);
+        border-radius: 50%;
+        filter: blur(40px);
+        animation: pulseGlow 3s ease-in-out infinite alternate;
+      }
+      .preloader-icon-wrap {
+        position: relative;
+        width: 88px;
+        height: 88px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(217, 70, 239, 0.3));
+        padding: 2px;
+        box-shadow: 0 0 35px rgba(217, 70, 239, 0.35), 0 0 15px rgba(6, 182, 212, 0.25);
+        margin-bottom: 20px;
+        animation: floatIcon 3s ease-in-out infinite;
+      }
+      .preloader-icon-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: 22px;
+        background: #0b0e2b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .preloader-icon-inner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 22px;
+      }
+      .preloader-icon-fallback {
+        font-size: 38px;
+        line-height: 1;
+      }
+      .preloader-title {
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: linear-gradient(to right, #22d3ee, #e879f9, #f43f5e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0 0 6px 0;
+        text-shadow: 0 0 30px rgba(217, 70, 239, 0.4);
+      }
+      .preloader-subtitle {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 28px;
+      }
+      .preloader-bar-wrap {
+        width: 160px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+      }
+      .preloader-bar-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 40%;
+        background: linear-gradient(90deg, #06b6d4, #d946ef);
+        border-radius: 999px;
+        animation: loadingBar 1.6s ease-in-out infinite;
+      }
+      .preloader-status {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-top: 14px;
+      }
+      @keyframes spin { 100% { transform: rotate(360deg); } }
+      @keyframes pulseGlow { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.15); opacity: 1; } }
+      @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+      @keyframes loadingBar {
+        0% { left: -40%; width: 40%; }
+        50% { left: 30%; width: 50%; }
+        100% { left: 100%; width: 30%; }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-MadyW90S.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-wKJ2eVT-.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-core-C0AxIY2T.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-CeRONj9i.css">
+  <link rel="manifest" href="/manifest.webmanifest"></head>
+  <body>
+    <div id="preloader">
+      <div class="preloader-glow-circle"></div>
+      <div class="preloader-icon-wrap">
+        <div class="preloader-icon-inner">
+          <img src="/icon.png" alt="MergeVerse" onerror="this.style.display='none'; document.getElementById('icon-fallback').style.display='block';" />
+          <span id="icon-fallback" class="preloader-icon-fallback" style="display:none;">🌌</span>
+        </div>
+      </div>
+      <div class="preloader-title">MergeVerse</div>
+      <div class="preloader-subtitle">The Ultimate Evolution</div>
+      <div class="preloader-bar-wrap">
+        <div class="preloader-bar-fill"></div>
+      </div>
+      <div class="preloader-status">Entering Cosmic Realm...</div>
+    </div>
+    
+    <div id="root"></div>
+    
+    
+    <script>
+      (function() {
+        var dismissed = false;
+        window.__DISMISS_PRELOADER__ = function() {
+          if (dismissed) return;
+          dismissed = true;
+          var p = document.getElementById('preloader');
+          if (p) {
+            p.classList.add('fade-out');
+            setTimeout(function() {
+              if (p.parentNode) p.parentNode.removeChild(p);
+            }, 450);
+          }
+        };
+
+        // Safety fallback: if app mounts slowly, auto-dismiss preloader after 2.5s
+        setTimeout(function() {
+          if (!dismissed) {
+            window.__DISMISS_PRELOADER__();
+          }
+        }, 2500);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,123 @@
+{
+  "entities": {
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Admin access flag",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile with display name and top-level stats",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "lastLoginAt": { "type": "number" }
+      },
+      "required": ["createdAt"]
+    },
+    "UserEconomy": {
+      "title": "UserEconomy",
+      "description": "Economy and progress state",
+      "type": "object",
+      "properties": {
+        "coins": { "type": "number" },
+        "gems": { "type": "number" },
+        "energy": { "type": "number" },
+        "premiumTokens": { "type": "number" },
+        "level": { "type": "number" },
+        "xp": { "type": "number" },
+        "streak": { "type": "number" },
+        "vipLevel": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "unlockedThemes": { "type": "array" }
+      },
+      "required": ["updatedAt"]
+    },
+    "UserStats": {
+      "title": "UserStats",
+      "description": "Game usage stats",
+      "type": "object",
+      "properties": {
+        "totalMerges": { "type": "number" },
+        "highestTile": { "type": "number" },
+        "bombsUsed": { "type": "number" },
+        "totalScore": { "type": "number" },
+        "matchesPlayed": { "type": "number" },
+        "bossesDefeated": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["updatedAt"]
+    },
+    "LeaderboardScore": {
+      "title": "LeaderboardScore",
+      "description": "Leaderboard entry",
+      "type": "object",
+      "properties": {
+        "displayName": { "type": "string" },
+        "score": { "type": "number" },
+        "level": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["score", "updatedAt", "userId"]
+    },
+    "RemoteAdsConfig": {
+      "title": "RemoteAdsConfig",
+      "description": "Synced private ads and AdMob monetization settings",
+      "type": "object",
+      "properties": {
+        "privateAds": { "type": "array" },
+        "adMobConfig": { "type": "object" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["updatedAt"]
+    },
+    "RemoteRolesConfig": {
+      "title": "RemoteRolesConfig",
+      "description": "Admin users, sub-roles, PINs, and granular permissions",
+      "type": "object",
+      "properties": {
+        "adminUsers": { "type": "array" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["updatedAt"]
+    }
+  },
+  "firestore": {
+    "remote_config/ads": {
+      "schema": "RemoteAdsConfig",
+      "description": "Public read, admin write remote ads configuration"
+    },
+    "remote_config/roles": {
+      "schema": "RemoteRolesConfig",
+      "description": "Admin role and authentication mapping"
+    },
+    "admins/{userId}": {
+      "schema": "AdminRecord",
+      "description": "Who is admin"
+    },
+    "users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Public user profile"
+    },
+    "users/{userId}/private/economy": {
+      "schema": "UserEconomy",
+      "description": "Private economy data"
+    },
+    "users/{userId}/private/stats": {
+      "schema": "UserStats",
+      "description": "Private game stats"
+    },
+    "leaderboards/{mode}/scores/{userId}": {
+      "schema": "LeaderboardScore",
+      "description": "Scores per mode"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mergeverse.game",
+      "sha256_cert_fingerprints": [
+        "MANUAL_ACTION_REQUIRED_INSERT_SHA256_FINGERPRINT"
+      ]
+    }
+  }
+]

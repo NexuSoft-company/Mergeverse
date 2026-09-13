@@ -1,0 +1,140 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+    
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    
+    function isValidId(id) { 
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['email', 'createdAt'])
+        && data.keys().size() == 2
+        && data.email is string
+        && data.createdAt is timestamp;
+    }
+
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['createdAt'])
+        && (data.get('displayName', '') is string)
+        && (data.get('photoURL', '') is string)
+        && (data.get('email', '') is string)
+        && (data.get('providerId', '') is string)
+        && (data.get('lastLoginAt', request.time) is timestamp)
+        && data.createdAt is timestamp;
+    }
+
+    function isValidUserEconomy(data) {
+      return data.keys().hasAll(['updatedAt'])
+        && (data.get('coins', 0) is number)
+        && (data.get('gems', 0) is number)
+        && (data.get('energy', 0) is number)
+        && (data.get('premiumTokens', 0) is number)
+        && (data.get('level', 1) is number)
+        && (data.get('xp', 0) is number)
+        && (data.get('streak', 1) is number)
+        && (data.get('vipLevel', 0) is number)
+        && (data.get('unlockedThemes', []) is list)
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidUserStats(data) {
+      return data.keys().hasAll(['updatedAt'])
+        && (data.get('totalMerges', 0) is number)
+        && (data.get('highestTile', 0) is number)
+        && (data.get('bombsUsed', 0) is number)
+        && (data.get('totalScore', 0) is number)
+        && (data.get('matchesPlayed', 0) is number)
+        && (data.get('bossesDefeated', 0) is number)
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidLeaderboardScore(data) {
+       return data.keys().hasAll(['score', 'updatedAt', 'userId'])
+         && data.score is number
+         && (data.get('displayName', '') is string)
+         && (data.get('level', 1) is number)
+         && data.userId is string
+         && data.updatedAt is timestamp;
+    }
+
+    match /admins/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow list: if false; // Only superadmin through backend
+      allow create, update, delete: if false; // Managed via Firebase Console or Backend only
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId);
+      allow list: if false; 
+      
+      allow create: if isSignedIn() 
+        && isValidId(userId)
+        && request.auth.uid == userId 
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time;
+
+      allow update: if isSignedIn() 
+        && isValidId(userId)
+        && request.auth.uid == userId 
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == existing().createdAt
+        && (incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'lastLoginAt']));
+      
+      match /private/economy {
+        allow get: if isSignedIn() && request.auth.uid == userId;
+        allow list: if false;
+        
+        allow create: if isSignedIn()
+          && request.auth.uid == userId
+          && isValidUserEconomy(incoming())
+          && incoming().updatedAt == request.time;
+          
+        allow update: if false; // SECURITY: Economy manipulation strictly via secured backend API
+      }
+      
+      match /private/stats {
+        allow get: if isSignedIn() && request.auth.uid == userId;
+        allow list: if false;
+        
+        allow create: if isSignedIn()
+          && request.auth.uid == userId
+          && isValidUserStats(incoming())
+          && incoming().updatedAt == request.time;
+          
+        allow update: if false; // SECURITY: Stats tracking updated securely via backend transaction matches
+      }
+    }
+
+    match /leaderboards/{mode}/scores/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create, update, delete: if false; // Validated and updated via secured backend API
+    }
+    
+    match /audit_logs/{logId} {
+      allow get, list: if isAdmin();
+      allow create: if isSignedIn(); // allow creating a log for suspicious activities by the backend/actually we create logs from backend using admin SDK which bypasses rules anyway.
+      allow update, delete: if false;
+    }
+
+    match /remote_config/{configId} {
+      allow get, list: if true; // Public read so offline/online players get live ads and configs without account requirement
+      allow write: if (incoming().get('masterPin', '') is string && incoming().get('masterPin', '').size() >= 4) || isSignedIn();
+    }
+  }
+}

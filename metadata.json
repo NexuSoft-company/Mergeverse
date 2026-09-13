@@ -1,0 +1,6 @@
+{
+  "name": "MergeVerse - The Ultimate Evolution",
+  "description": "MergeVerse: The Ultimate Evolution - Cosmic block dropping and merging puzzle game.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
